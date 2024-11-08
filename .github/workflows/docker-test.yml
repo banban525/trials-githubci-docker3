@@ -10,7 +10,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Checkout And Build
         run: docker compose -f test.compose.yml build
       - name: start containers

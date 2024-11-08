@@ -8,6 +8,6 @@ test("check", async ():Promise<void> => {
   const { stdout, stderr } = await execFile('docker', ['ps']);
   console.log('stdout:', stdout);
   console.log('stderr:', stderr);
-  expect(stdout).toContain("test.ts");
+  expect(stdout).toContain("testrunner");
 
 });

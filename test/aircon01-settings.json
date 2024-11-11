@@ -1,0 +1,45 @@
+{
+  "devices":{
+    "monoFunctionalLighting":{
+      "disabled":true,
+      "id": ""
+    },
+    "temperatureSensor":{
+      "disabled":true,
+      "id": ""
+    },
+    "humiditySensor":{
+      "disabled":true,
+      "id": ""
+    },
+    "humanDetectionSensor":{
+      "disabled":true,
+      "id": ""
+    },
+    "generalLighting":{
+      "disabled":true,
+      "id": ""
+    },
+    "electricallyOperatedRainSlidingDoorShutter":{
+      "disabled":true,
+      "id": ""
+    },
+    "electricLock":{
+      "disabled":true,
+      "id": ""
+    },
+    "switch":{
+      "disabled":true,
+      "id": ""
+    },
+    "homeAirConditioner":{
+      "disabled":false,
+      "id": "fe00007700000202420afef90500000001"
+    },
+    "electricWaterHeater":{
+      "disabled":true,
+      "id": ""
+    }
+  },
+  "nodeProfileId":"fe00007700000202420afef90500000001"
+}

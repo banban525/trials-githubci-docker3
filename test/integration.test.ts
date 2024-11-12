@@ -59,7 +59,7 @@ interface echonetlite2mqttStatus
 test("check", async ():Promise<void> => {
   const yml = yaml.dump(defaultCompose);
   fs.writeFileSync("../compose.yml", yml, {encoding:"utf-8"});
-  await execFile('docker', ['compose', 'up', "-d"]);
+  await execFile('docker', ['compose', 'up', "-d", "-f", "../compose.yml"]);
 
   let lastStatus:echonetlite2mqttStatus = {systemVersion:"", devices:[]};
   for(let i=0; i<10; i++){
@@ -81,7 +81,7 @@ test("check", async ():Promise<void> => {
 
   console.log(`OK:${lastStatus.systemVersion}`);
 
-  for(let i=0; i<10; i++){
+  for(let i=0; i<40; i++){
     try{
       const res = await fetch("http://localhost:3000/api/status", {timeout:500});
       const json = await res.json();

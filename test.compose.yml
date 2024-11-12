@@ -1,7 +1,0 @@
-services:
-  testrunner:
-    build: ./test/
-    privileged: true
-    volumes:
-      - /bin/docker:/bin/docker
-      - /var/run/docker.sock:/var/run/docker.sock

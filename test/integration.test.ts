@@ -4,6 +4,7 @@ import {ComposeSpecification} from './compose-spec';
 import yaml from "js-yaml";
 import fs from "fs";
 import fetch from "node-fetch";
+import path from "path";
 
 const execFile = util.promisify(child_process.execFile);
 
@@ -58,8 +59,8 @@ interface echonetlite2mqttStatus
 
 test("check", async ():Promise<void> => {
   const yml = yaml.dump(defaultCompose);
-  fs.writeFileSync("../compose.yml", yml, {encoding:"utf-8"});
-  await execFile('docker', ['compose', "-f", "../compose.yml", 'up', "-d"]);
+  fs.writeFileSync(path.resolve(__dirname, "../compose.yml"), yml, {encoding:"utf-8"});
+  await execFile('docker', ['compose', "-f", path.resolve(__dirname, "../compose.yml"), 'up', "-d"]);
 
   let lastStatus:echonetlite2mqttStatus = {systemVersion:"", devices:[]};
   for(let i=0; i<10; i++){

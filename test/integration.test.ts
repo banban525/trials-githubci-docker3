@@ -59,7 +59,7 @@ interface echonetlite2mqttStatus
 test("check", async ():Promise<void> => {
   const yml = yaml.dump(defaultCompose);
   fs.writeFileSync("../compose.yml", yml, {encoding:"utf-8"});
-  await execFile('docker', ['compose', 'up', "-d", "-f", "../compose.yml"]);
+  await execFile('docker', ['compose', "-f", "../compose.yml", 'up', "-d"]);
 
   let lastStatus:echonetlite2mqttStatus = {systemVersion:"", devices:[]};
   for(let i=0; i<10; i++){

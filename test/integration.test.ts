@@ -80,4 +80,4 @@ test("check", async ():Promise<void> => {
 
   await execFile('docker', ['compose', 'down']);
 
-});
+}, 60*1000);

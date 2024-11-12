@@ -49,17 +49,24 @@ const defaultCompose : ComposeSpecification = {
   }
 }
 
+interface echonetlite2mqttStatus
+{
+  systemVersion:string;
+  devices: {id:string}[];
+}
+
+
 test("check", async ():Promise<void> => {
   const yml = yaml.dump(defaultCompose);
   fs.writeFileSync("../compose.yml", yml, {encoding:"utf-8"});
   await execFile('docker', ['compose', 'up', "-d"]);
 
-  let lastStatus:{systemVersion:string} = {systemVersion:""};
+  let lastStatus:echonetlite2mqttStatus = {systemVersion:"", devices:[]};
   for(let i=0; i<10; i++){
     try{
       const res = await fetch("http://localhost:3000/api/status", {timeout:500});
       const json = await res.json();
-      lastStatus = json as {systemVersion:string};
+      lastStatus = json as echonetlite2mqttStatus;
       break;
     }
     catch(e)
@@ -72,7 +79,31 @@ test("check", async ():Promise<void> => {
   
   expect(lastStatus.systemVersion).not.toBe("");
 
-  console.log("OK");
+  console.log(`OK:${lastStatus.systemVersion}`);
+
+  for(let i=0; i<10; i++){
+    try{
+      const res = await fetch("http://localhost:3000/api/status", {timeout:500});
+      const json = await res.json();
+      lastStatus = json as echonetlite2mqttStatus;
+      if(lastStatus.devices.length === 0)
+      {
+        console.log("retry");
+        await new Promise((resolve)=>setTimeout(resolve, 1000));
+        continue;
+      }
+      break;
+    }
+    catch(e)
+    {
+      console.log("retry");
+      await new Promise((resolve)=>setTimeout(resolve, 1000));
+      continue;
+    }
+  }
+
+  console.dir(lastStatus);
+
   const { stdout, stderr } = await execFile('docker', ['ps']);
   console.log('stdout:', stdout);
   console.log('stderr:', stderr);

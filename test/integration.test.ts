@@ -24,10 +24,10 @@ const defaultCompose : ComposeSpecification = {
       image:"banban525/echonet-lite-kaden-emulator:latest",
       ports:["3001:3000"],
       volumes:[
-        "./test/aircon01-settings.json:/home/node/app/config/aircon01-settings.json"
+        //"./test/aircon01-settings.json:/home/node/app/config/aircon01-settings.json"
       ],
       environment:{
-        SETTINGS: "/home/node/app/config/aircon01-settings.json"
+        //SETTINGS: "/home/node/app/config/aircon01-settings.json"
       },
       networks:{
         echonet_network_test:{
@@ -56,59 +56,57 @@ interface echonetlite2mqttStatus
   devices: {id:string}[];
 }
 
+async function getJson<T>(url:string, timeout:number, checkCallback:(json:T)=>boolean):Promise<T|undefined>
+{
+  let result:T|undefined = undefined;
+  for(let i=0; i<timeout/500; i++){
+    try
+    {
+      const res = await fetch(url, {timeout:500});
+      result = await res.json() as T;
+    }
+    catch(e)
+    {
+      // retry
+    }
+    if(result!==undefined && checkCallback(result))
+    {
+      return result;
+    }
+    await new Promise((resolve)=>setTimeout(resolve, 500));
+  }
+  return undefined;
+}
+
 
 test("check", async ():Promise<void> => {
   const yml = yaml.dump(defaultCompose);
   fs.writeFileSync(path.resolve(__dirname, "../compose.yml"), yml, {encoding:"utf-8"});
   await execFile('docker', ['compose', "-f", path.resolve(__dirname, "../compose.yml"), 'up', "-d"]);
 
-  let lastStatus:echonetlite2mqttStatus = {systemVersion:"", devices:[]};
-  for(let i=0; i<10; i++){
-    try{
-      const res = await fetch("http://localhost:3000/api/status", {timeout:500});
-      const json = await res.json();
-      lastStatus = json as echonetlite2mqttStatus;
-      break;
-    }
-    catch(e)
-    {
-      console.log("retry");
-      await new Promise((resolve)=>setTimeout(resolve, 1000));
-      continue;
-    }
-  }
+  let lastStatus = await getJson<echonetlite2mqttStatus>(
+    "http://localhost:3000/api/status", 
+    5*1000, 
+    (json:echonetlite2mqttStatus)=>json?.systemVersion !== "");
   
-  expect(lastStatus.systemVersion).not.toBe("");
+  // EchonetLite2MQTTが起動してバージョンが取得できること
+  expect(lastStatus).not.toBe(undefined);
+  expect(lastStatus?.systemVersion).not.toBe("");
+  console.log(`OK:${lastStatus?.systemVersion}`);
 
-  console.log(`OK:${lastStatus.systemVersion}`);
+  lastStatus = await getJson<echonetlite2mqttStatus>(
+    "http://localhost:3000/api/status", 
+    20*1000, 
+    (json:echonetlite2mqttStatus)=>json?.devices.length > 0
+  );
 
-  for(let i=0; i<40; i++){
-    try{
-      const res = await fetch("http://localhost:3000/api/status", {timeout:500});
-      const json = await res.json();
-      lastStatus = json as echonetlite2mqttStatus;
-      if(lastStatus.devices.length === 0)
-      {
-        console.log("retry");
-        await new Promise((resolve)=>setTimeout(resolve, 1000));
-        continue;
-      }
-      break;
-    }
-    catch(e)
-    {
-      console.log("retry");
-      await new Promise((resolve)=>setTimeout(resolve, 1000));
-      continue;
-    }
-  }
-
-  console.dir(lastStatus);
+  // デバイスが検出できていること
+  expect(lastStatus).not.toBe(undefined);
+  expect(lastStatus?.devices.length).not.toBe(0);
 
   const { stdout, stderr } = await execFile('docker', ['ps']);
   console.log('stdout:', stdout);
   console.log('stderr:', stderr);
-  //expect(stdout).toContain("testrunner");
 
   await execFile('docker', ['compose', 'down']);
 

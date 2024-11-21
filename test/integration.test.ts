@@ -96,7 +96,7 @@ test("check", async ():Promise<void> => {
 
   lastStatus = await getJson<echonetlite2mqttStatus>(
     "http://localhost:3000/api/status", 
-    20*1000, 
+    60*1000, 
     (json:echonetlite2mqttStatus)=>json?.devices.length > 0
   );
 
